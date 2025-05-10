@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Генератор категорий и цветов</title>
@@ -102,12 +103,13 @@
         async function loadData() {
             try {
                 // Загрузка категорий
-                const catResponse = await fetch('categories.txt');
+                const cacheBuster = '?v=' + Date.now();
+                const catResponse = await fetch('categories.txt' + cacheBuster);
                 const catText = await catResponse.text();
                 categories = catText.split('\n').filter(item => item.trim() !== '');
                 
                 // Загрузка цветов
-                const colResponse = await fetch('colors.txt');
+                const colResponse = await fetch('colors.txt' + cacheBuster);
                 const colText = await colResponse.text();
                 colors = colText.split('\n')
                     .filter(line => line.trim() !== '')
