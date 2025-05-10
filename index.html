@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор категорий и цветов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .card {
+            margin: 20px 0;
+            padding-top: 20px;
+            padding-top: 0px;
+            border-radius: 5px;
+        }
+        .card1 {
+            margin: 20px 0;
+            padding-top: 0px;
+            padding-top: 0px;
+            border-radius: 5px;
+        }
+        .category {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .color-box {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Генератор категорий и цветов</h1>
+        
+        <div class="card">
+            <h2>Категория:</h2>
+            <div class="category" id="category">Нажмите кнопку</div>
+        </div>
+        
+        <div class="card1">
+            <h2>Цвет:</h2>
+            <div class="color-box" id="colorBox">?</div>
+            <div id="colorName"></div>
+        </div>
+        
+        <button id="generateBtn">Сгенерировать</button>
+    </div>
+
+    <script>
+        let categories = [];
+        let colors = [];
+        let usedCategories = [];
+        let usedColors = [];
+        
+        // Загрузка данных из файлов
+        async function loadData() {
+            try {
+                // Загрузка категорий
+                const catResponse = await fetch('categories.txt');
+                const catText = await catResponse.text();
+                categories = catText.split('\n').filter(item => item.trim() !== '');
+                
+                // Загрузка цветов
+                const colResponse = await fetch('colors.txt');
+                const colText = await colResponse.text();
+                colors = colText.split('\n')
+                    .filter(line => line.trim() !== '')
+                    .map(line => {
+                        const [hex, ...nameParts] = line.split(' ');
+                        return {
+                            hex: hex.trim(),
+                            name: nameParts.join(' ').trim()
+                        };
+                    });
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                alert('Ошибка загрузки данных. Проверьте наличие файлов categories.txt и colors.txt');
+            }
+        }
+        
+        // Генерация случайного элемента с учетом истории
+        function getRandomItem(array, usedItems) {
+            // Если все элементы уже были использованы, сбросим историю
+            if (usedItems.length >= array.length) {
+                usedItems = [];
+            }
+            
+            let availableItems = array.filter(item => !usedItems.includes(item));
+            if (availableItems.length === 0) {
+                availableItems = [...array];
+                usedItems = [];
+            }
+            
+            const randomIndex = Math.floor(Math.random() * availableItems.length);
+            const selectedItem = availableItems[randomIndex];
+            usedItems.push(selectedItem);
+            
+            return { item: selectedItem, updatedUsedItems: usedItems };
+        }
+        
+        // Обновление интерфейса
+        function updateUI(category, color) {
+            document.getElementById('category').textContent = category;
+            
+            const colorBox = document.getElementById('colorBox');
+            colorBox.style.backgroundColor = color.hex;
+            colorBox.textContent = color.name;
+        }
+        
+        // Обработчик кнопки
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            if (categories.length === 0 || colors.length === 0) {
+                alert('Данные еще не загружены или файлы пусты');
+                return;
+            }
+            
+            // Получаем случайную категорию
+            const categoryResult = getRandomItem(categories, usedCategories);
+            usedCategories = categoryResult.updatedUsedItems;
+            const selectedCategory = categoryResult.item;
+            
+            // Получаем случайный цвет
+            const colorResult = getRandomItem(colors, usedColors);
+            usedColors = colorResult.updatedUsedItems;
+            const selectedColor = colorResult.item;
+            
+            updateUI(selectedCategory, selectedColor);
+        });
+        
+        // Загружаем данные при загрузке страницы
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
