@@ -45,6 +45,12 @@
             align-items: center;
             justify-content: center;
         }
+        .printer-adjusted {
+            filter: 
+                brightness(1.05)
+                contrast(0.98)
+                saturate(0.95);
+}
         .color-box {
             width: 200px;
             height: 200px;
@@ -149,9 +155,10 @@
         // Обновление интерфейса
         function updateUI(category, color) {
             document.getElementById('category').textContent = category;
-            
+    
             const colorBox = document.getElementById('colorBox');
             colorBox.style.backgroundColor = color.hex;
+            colorBox.classList.add('printer-adjusted'); // Применяем CSS-фильтр
             colorBox.textContent = color.name;
         }
         
